@@ -35,20 +35,41 @@ public:
 		a3 = k * expNeqSigma * (sigma + 1);
 		a4 = -k * expNeq2Sigma;
 
-		size_t rows = imageMatrix.rows;
-		size_t cols = imageMatrix.cols;
+		const int rows = imageMatrix.rows;
+		const int cols = imageMatrix.cols;
+
+		cv::Mat outputMatrix = cv::Mat(rows,cols,CV_8U);
+
 		size_t i, j;
+
 		uchar* pixelPointer;
-		std::array<uchar,cols> y1;
-		uchar y2[cols];
+		std::vector<uchar> y1(cols);
+		std::vector<uchar> y2(cols);
+		
 
 		for (i = 0; i < rows; ++i) {
 			pixelPointer = imageMatrix.ptr<uchar>(i);
 
-			//do stuff for first 2 pixels
+			//do stuff for first 2 pixels NOTE: might need improvement.
+			y1[0] = a1 * pixelPointer[0];
+			y1[1] = a1 * pixelPointer[1] + a2 * pixelPointer[0] + b1 * y1[0];
 
 			for (j = 2; j < cols; ++j) {
+				y1[j] = a1 * pixelPointer[j] + a2 * pixelPointer[j - 1] + b1 * y1[j - 1] + b2 * y1[j - 2];
+			}
 
+			//do other stuff for first 2 pixels..
+
+			//###########   TODO   ##########
+
+			for (j = cols - 3; j >= 0; --j) {
+				y2[j] = a3 * pixelPointer[j] + a4 * pixelPointer[j - 1] + b1 * y1[j - 1] + b2 * y1[j - 2];
+			}
+
+
+			//Merge both y1 and y2 and store them.
+			for (j = 0; j < cols; ++j) {
+				outputMatrix.at<uchar>(i,j) = c2 * (y1[j] + y2[j]);
 			}
 		}
 	}
