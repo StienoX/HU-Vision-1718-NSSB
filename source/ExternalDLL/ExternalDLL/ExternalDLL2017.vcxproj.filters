@@ -114,6 +114,9 @@
     <ClInclude Include="SonnetXVIII.h">
       <Filter>Header Files\private\disableautocomplete</Filter>
     </ClInclude>
+    <ClInclude Include="Deriche.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Image.cpp">

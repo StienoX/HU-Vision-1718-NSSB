@@ -86,6 +86,7 @@
     <ClInclude Include="DefaultExtraction.h" />
     <ClInclude Include="DefaultLocalization.h" />
     <ClInclude Include="DefaultPreProcessing.h" />
+    <ClInclude Include="Deriche.hpp" />
     <ClInclude Include="DLLExecution.h" />
     <ClInclude Include="export.h" />
     <ClInclude Include="Extraction.h" />

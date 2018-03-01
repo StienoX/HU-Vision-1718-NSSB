@@ -18,11 +18,19 @@ public:
 		sigma = new_sigma;
 		// calculate using the deriche coefficients. see https://en.wikipedia.org/wiki/Deriche_edge_detector and http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.476.5736&rep=rep1&type=pdf for more information.
 		expNeqSigma = exp(-sigma);
-		expNeqSigma = exp(-2 * sigma);
+		expNeq2Sigma = exp(-2 * sigma);
 		k = pow(1 - expNeqSigma, 2.0) / (1 + 2 * sigma*expNeqSigma - expNeq2Sigma);
 		b1 = 2 * expNeq2Sigma;
 		b2 = -1 * expNeq2Sigma;
-	}
+
+		std::cout << "DEBUG\n" <<
+			"Sigma: " << sigma << "\n " <<
+			"expNeqSigma: " << expNeqSigma << "\n " <<
+			"expNeq2Sigma: " << expNeq2Sigma << "\n " <<
+			"k: " << k << "\n " <<
+			"b1: " << b1 << "\n " <<
+			"b2: " << b2 << "\n ";
+		}
 
 	cv::Mat smooth(cv::Mat & imageMatrix) {
 
@@ -38,11 +46,11 @@ public:
 		const int rows = imageMatrix.rows;
 		const int cols = imageMatrix.cols;
 
+		cv::Mat tempMatrix = cv::Mat(cols, rows, CV_8U);
 		cv::Mat outputMatrix = cv::Mat(rows,cols,CV_8U);
 
 		int i, j;
 
-		//uchar* pixelPointer;
 		uchar* pixelPointer;
 		std::vector<double> y1(cols);
 		std::vector<double> y2(cols);
@@ -54,6 +62,9 @@ public:
 			//do stuff for first 2 pixels NOTE: might need improvement.
 			y1[0] = a1 * pixelPointer[0];
 			y1[1] = a1 * pixelPointer[1] + a2 * pixelPointer[0] + b1 * y1[0];
+
+			//std::cout << (double)(y1[0]);
+			//std::cout << (double)(y1[1]);
 
 			for (j = 2; j < cols; ++j) {
 				y1[j] = a1 * pixelPointer[j] + a2 * pixelPointer[j - 1] + b1 * y1[j - 1] + b2 * y1[j - 2];
@@ -69,20 +80,41 @@ public:
 
 			//Merge both y1 and y2 and store them.
 			for (j = 0; j < cols; ++j) {
-				outputMatrix.at<uchar>(i,j) = (uchar)(y1[j] + y2[j]);
+
+				//outputMatrix.at<uchar>(i,j) = (uchar)(y1[j] + y2[j]);
+
+				//we transpose the image here!
+				tempMatrix.at<uchar>(j,i) = (uchar)(y1[j] + y2[j]);
+			}
+		}
+
+		for (j = 0; j < cols; ++j) {
+			pixelPointer = tempMatrix.ptr<uchar>(j);
+
+			//do stuff for first 2 pixels NOTE: might need improvement.
+			y1[0] = a1 * pixelPointer[0];
+			y1[1] = a1 * pixelPointer[1] + a2 * pixelPointer[0] + b1 * y1[0];
+
+			for (i = 2; i < rows; ++i) {
+				y1[i] = a1 * pixelPointer[i] + a2 * pixelPointer[i - 1] + b1 * y1[i - 1] + b2 * y1[i - 2];
+			}
+
+			//do other stuff for first 2 pixels..
+			y2[rows - 1] = a3 * pixelPointer[rows - 1];
+			y2[rows - 2] = a3 * pixelPointer[rows - 2] + a4 * pixelPointer[0] + b1 * y2[rows - 1];
+
+			for (i = rows - 3; i >= 0; --i) {
+				y2[i] = a3 * pixelPointer[i + 1] + a4 * pixelPointer[i + 2] + b1 * y1[i + 1] + b2 * y1[i + 2];
+			}
+
+			//Merge both y1 and y2 and store them.
+			for (i = 0; i < rows; ++i) {
+
+				//we transpose the image back here!
+				outputMatrix.at<uchar>(j, i) = (uchar)(y1[j] + y2[j]);
 			}
 		}
 
 		return outputMatrix;
-		uchar pixel;
-
-		for (j = 0; j < cols; ++j) {
-			
-			y1[0] = a1 * pixelPointer[0];
-			y1[1] = a1 * pixelPointer[1] + a2 * pixelPointer[0] + b1 * y1[0];
-			for (i = 2; i < rows; ++i) {
-				y1[i] = a1 * pixelPointer[i] + a2 * pixelPointer[i - 1] + b1 * y1[i - 1] + b2 * y1[i - 2];
-			}
-		}
 	}
 };
