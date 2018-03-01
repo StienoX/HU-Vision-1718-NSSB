@@ -10,8 +10,8 @@ private:
 	double sigma;
 	double expNeqSigma, expNeq2Sigma;
 public:
-	Deriche(const double & a) {
-		setSigma(a);
+	Deriche(const double & new_sigma = 1) {
+		setSigma(new_sigma);
 	};
 
 	void setSigma(const double & new_sigma) {
@@ -24,7 +24,7 @@ public:
 		b2 = -1 * expNeq2Sigma;
 	}
 
-	void smooth(cv::Mat & imageMatrix) {
+	cv::Mat smooth(cv::Mat & imageMatrix) {
 
 		//asserting if its not CV_8U (unsigned char type matrix)
 		CV_Assert(imageMatrix.depth() == CV_8U);
@@ -40,11 +40,12 @@ public:
 
 		cv::Mat outputMatrix = cv::Mat(rows,cols,CV_8U);
 
-		size_t i, j;
+		int i, j;
 
+		//uchar* pixelPointer;
 		uchar* pixelPointer;
-		std::vector<uchar> y1(cols);
-		std::vector<uchar> y2(cols);
+		std::vector<double> y1(cols);
+		std::vector<double> y2(cols);
 		
 
 		for (i = 0; i < rows; ++i) {
@@ -59,17 +60,28 @@ public:
 			}
 
 			//do other stuff for first 2 pixels..
-
-			//###########   TODO   ##########
+			y2[cols-1] = a3 * pixelPointer[cols-1];
+			y2[cols-2] = a3 * pixelPointer[cols-2] + a4 * pixelPointer[0] + b1 * y2[cols - 1];
 
 			for (j = cols - 3; j >= 0; --j) {
-				y2[j] = a3 * pixelPointer[j] + a4 * pixelPointer[j - 1] + b1 * y1[j - 1] + b2 * y1[j - 2];
+				y2[j] = a3 * pixelPointer[j+1] + a4 * pixelPointer[j + 2] + b1 * y1[j + 1] + b2 * y1[j + 2];
 			}
-
 
 			//Merge both y1 and y2 and store them.
 			for (j = 0; j < cols; ++j) {
-				outputMatrix.at<uchar>(i,j) = c2 * (y1[j] + y2[j]);
+				outputMatrix.at<uchar>(i,j) = (uchar)(y1[j] + y2[j]);
+			}
+		}
+
+		return outputMatrix;
+		uchar pixel;
+
+		for (j = 0; j < cols; ++j) {
+			
+			y1[0] = a1 * pixelPointer[0];
+			y1[1] = a1 * pixelPointer[1] + a2 * pixelPointer[0] + b1 * y1[0];
+			for (i = 2; i < rows; ++i) {
+				y1[i] = a1 * pixelPointer[i] + a2 * pixelPointer[i - 1] + b1 * y1[i - 1] + b2 * y1[i - 2];
 			}
 		}
 	}
