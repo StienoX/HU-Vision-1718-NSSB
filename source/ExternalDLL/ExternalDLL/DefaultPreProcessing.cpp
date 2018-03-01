@@ -49,7 +49,7 @@ IntensityImage * DefaultPreProcessing::stepEdgeDetection(const IntensityImage &s
 	cv::Mat inputImageMatrix;
 	HereBeDragons::HerLoveForWhoseDearLoveIRiseAndFall(src, inputImageMatrix);
 
-	Deriche edgeDetector(0.5);
+	Deriche edgeDetector(0.75);
 	cv::Mat outputImageMatrix = edgeDetector.smooth(inputImageMatrix);
 	//std::cout << outputImageMatrix;
 	IntensityImage * outputImage = ImageFactory::newIntensityImage();
