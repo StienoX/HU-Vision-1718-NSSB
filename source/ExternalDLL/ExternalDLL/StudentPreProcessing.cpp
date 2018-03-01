@@ -1,4 +1,8 @@
 #include "StudentPreProcessing.h"
+#include "HereBeDragons.h"
+#include "ImageIO.h"
+#include "Deriche.hpp"
+
 
 
 IntensityImage * StudentPreProcessing::stepToIntensityImage(const RGBImage &image) const {
@@ -10,7 +14,15 @@ IntensityImage * StudentPreProcessing::stepScaleImage(const IntensityImage &imag
 }
 
 IntensityImage * StudentPreProcessing::stepEdgeDetection(const IntensityImage &image) const {
+	cv::Mat inputImageMatrix;
+	HereBeDragons::HerLoveForWhoseDearLoveIRiseAndFall(image,inputImageMatrix);
+
+	Deriche edgeDetector(0.5);
+	cv::Mat outputImageMatrix = edgeDetector.smooth(inputImageMatrix);
+	std::cout << outputImageMatrix;
+	IntensityImage * outputImage;
 	return nullptr;
+	//return outputImage;
 }
 
 IntensityImage * StudentPreProcessing::stepThresholding(const IntensityImage &image) const {

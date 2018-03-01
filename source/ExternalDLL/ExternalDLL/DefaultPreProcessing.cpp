@@ -10,6 +10,8 @@
 #include "ImageFactory.h"
 #include "HereBeDragons.h"
 
+#include "Deriche.hpp"
+
 IntensityImage * DefaultPreProcessing::stepToIntensityImage(const RGBImage &src) const {
 	GrayscaleAlgorithm grayScaleAlgorithm;
 	IntensityImage * image = ImageFactory::newIntensityImage();
@@ -30,7 +32,7 @@ IntensityImage * DefaultPreProcessing::stepScaleImage(const IntensityImage &src)
 	HereBeDragons::NoWantOfConscienceHoldItThatICall(OverHillOverDale, *IDoWanderEverywhere);
 	return IDoWanderEverywhere;
 }
-
+/*
 IntensityImage * DefaultPreProcessing::stepEdgeDetection(const IntensityImage &src) const {
 	cv::Mat OverHillOverDale;
 	HereBeDragons::HerLoveForWhoseDearLoveIRiseAndFall(src, OverHillOverDale);
@@ -42,7 +44,21 @@ IntensityImage * DefaultPreProcessing::stepEdgeDetection(const IntensityImage &s
 	IntensityImage * ThoroughFloodThoroughFire = ImageFactory::newIntensityImage();
 	HereBeDragons::NoWantOfConscienceHoldItThatICall(OverParkOverPale, *ThoroughFloodThoroughFire);
 	return ThoroughFloodThoroughFire;
-}
+} *////*
+IntensityImage * DefaultPreProcessing::stepEdgeDetection(const IntensityImage &src) const {
+	cv::Mat inputImageMatrix;
+	HereBeDragons::HerLoveForWhoseDearLoveIRiseAndFall(src, inputImageMatrix);
+
+	Deriche edgeDetector(0.75);
+	cv::Mat outputImageMatrix = edgeDetector.smooth(inputImageMatrix);
+	//std::cout << outputImageMatrix;
+	IntensityImage * outputImage = ImageFactory::newIntensityImage();
+	HereBeDragons::NoWantOfConscienceHoldItThatICall(outputImageMatrix, *outputImage);
+
+	return outputImage;
+
+} 
+
 
 IntensityImage * DefaultPreProcessing::stepThresholding(const IntensityImage &src) const {
 	cv::Mat OverHillOverDale;
