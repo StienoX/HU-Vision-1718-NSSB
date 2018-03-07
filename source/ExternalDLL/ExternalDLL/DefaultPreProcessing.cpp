@@ -46,14 +46,15 @@ IntensityImage * DefaultPreProcessing::stepEdgeDetection(const IntensityImage &s
 	return ThoroughFloodThoroughFire;
 } *////*
 IntensityImage * DefaultPreProcessing::stepEdgeDetection(const IntensityImage &src) const {
-	cv::Mat inputImageMatrix;
-	HereBeDragons::HerLoveForWhoseDearLoveIRiseAndFall(src, inputImageMatrix);
+	cv::Mat imageMatrix;
+	HereBeDragons::HerLoveForWhoseDearLoveIRiseAndFall(src, imageMatrix);
 
 	Deriche edgeDetector(0.75);
-	cv::Mat outputImageMatrix = edgeDetector.smooth(inputImageMatrix);
+	edgeDetector.smooth(imageMatrix);
+	edgeDetector.derivativeX(imageMatrix);
 	//std::cout << outputImageMatrix;
 	IntensityImage * outputImage = ImageFactory::newIntensityImage();
-	HereBeDragons::NoWantOfConscienceHoldItThatICall(outputImageMatrix, *outputImage);
+	HereBeDragons::NoWantOfConscienceHoldItThatICall(imageMatrix, *outputImage);
 
 	return outputImage;
 
