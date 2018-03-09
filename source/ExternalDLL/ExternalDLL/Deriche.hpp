@@ -69,7 +69,7 @@ private:
 			for (j = 0; j < cols; ++j) {
 
 				//we transpose the image here!
-				dst.at<uchar>(j, i) = (uchar)(y1[j] + y2[j]);
+				dst.at<uchar>(j, i) = c * (uchar)(y1[j] + y2[j]);
 			}
 		}
 	}
@@ -91,7 +91,7 @@ public:
 		a2 = k * expNeqSigma * (sigma - 1);
 		a3 = k * expNeqSigma * (sigma + 1);
 		a4 = -k * expNeq2Sigma;
-		c = -pow((1 - expNeqSigma), 2.0);
+		c = -pow(1 - expNeqSigma, 2.0);
 
 		std::cout << "DEBUG\n" <<
 			"Sigma: " << sigma << "\n " <<
@@ -134,10 +134,12 @@ public:
 
 		dericheIIR2(matrix, tempMatrix, rows, cols, y1, y2);
 		dericheIIR(tempMatrix, matrix, cols, rows, y1, y2);
-		matrix *= c;
-		dericheIIR(matrix, tempMatrix, cols, rows, y1, y2);
-		tempMatrix *= c;
-		dericheIIR2(tempMatrix, matrix, rows, cols, y1, y2);
+		dericheIIR(matrix, tempMatrix, rows, cols, y1, y2);
+		dericheIIR2(tempMatrix, matrix, cols, rows, y1, y2);
+
+
+		
+
 	}
 
 };
