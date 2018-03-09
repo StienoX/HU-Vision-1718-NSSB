@@ -6,3 +6,5 @@ source/ExternalDLL/ExternalDLL/ExternalDLL2017\.vcxproj
 testsets/Set A/TestSet Images/
 
 *.vcxproj
+
+source/ExternalDLL/ExternalDLL/x64/Debug/
