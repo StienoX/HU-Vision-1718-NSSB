@@ -69,7 +69,7 @@ private:
 			for (j = 0; j < cols; ++j) {
 
 				//we transpose the image here!
-				dst.at<uchar>(j, i) = c * (uchar)(y1[j] + y2[j]);
+				dst.at<uchar>(j, i) = (uchar)(c * (y1[j] + y2[j]));
 			}
 		}
 	}

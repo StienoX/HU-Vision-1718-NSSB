@@ -14,6 +14,7 @@ IntensityImage * StudentPreProcessing::stepScaleImage(const IntensityImage &imag
 }
 
 IntensityImage * StudentPreProcessing::stepEdgeDetection(const IntensityImage &image) const {
+	/*
 	cv::Mat inputImageMatrix;
 	HereBeDragons::HerLoveForWhoseDearLoveIRiseAndFall(image,inputImageMatrix);
 
@@ -21,8 +22,9 @@ IntensityImage * StudentPreProcessing::stepEdgeDetection(const IntensityImage &i
 	cv::Mat outputImageMatrix = edgeDetector.smooth(inputImageMatrix);
 	std::cout << outputImageMatrix;
 	IntensityImage * outputImage;
-	return nullptr;
 	//return outputImage;
+	*/
+	return nullptr;
 }
 
 IntensityImage * StudentPreProcessing::stepThresholding(const IntensityImage &image) const {
