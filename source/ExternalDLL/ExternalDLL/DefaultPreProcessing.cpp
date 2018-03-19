@@ -68,17 +68,16 @@ IntensityImage * DefaultPreProcessing::stepEdgeDetection(const IntensityImage &s
 	// Deriche
 	Deriche edgeDetector(4);
 	edgeDetector.smooth(imageMatrix);
-	cv::Mat temp, temp2;
+	cv::Mat temp;
 
 	imageMatrix.copyTo(temp);
-	imageMatrix.copyTo(temp2);
 
-	edgeDetector.derivativeX(temp);
-	edgeDetector.derivativeY(temp2);
+	edgeDetector.derivativeX(imageMatrix);
+	edgeDetector.derivativeY(temp);
 	
 	for (int i = 0; i < imageMatrix.rows; ++i) {
 		for (int j = 0; j < imageMatrix.cols; ++j) {
-			imageMatrix.at<uchar>(i, j) = (temp.at<uchar>(i, j) + temp2.at<uchar>(i, j)) / 2;
+			imageMatrix.at<uchar>(i, j) = (imageMatrix.at<uchar>(i, j) + temp.at<uchar>(i, j)) / 2;
 		}
 	}
 
