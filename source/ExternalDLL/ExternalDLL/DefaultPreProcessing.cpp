@@ -32,6 +32,7 @@ IntensityImage * DefaultPreProcessing::stepScaleImage(const IntensityImage &src)
 	HereBeDragons::NoWantOfConscienceHoldItThatICall(OverHillOverDale, *IDoWanderEverywhere);
 	return IDoWanderEverywhere;
 }
+
 /*
 IntensityImage * DefaultPreProcessing::stepEdgeDetection(const IntensityImage &src) const {
 	cv::Mat OverHillOverDale;
@@ -44,22 +45,49 @@ IntensityImage * DefaultPreProcessing::stepEdgeDetection(const IntensityImage &s
 	IntensityImage * ThoroughFloodThoroughFire = ImageFactory::newIntensityImage();
 	HereBeDragons::NoWantOfConscienceHoldItThatICall(OverParkOverPale, *ThoroughFloodThoroughFire);
 	return ThoroughFloodThoroughFire;
-} *////*
+}
+*/
+
 IntensityImage * DefaultPreProcessing::stepEdgeDetection(const IntensityImage &src) const {
 	cv::Mat imageMatrix;
 	HereBeDragons::HerLoveForWhoseDearLoveIRiseAndFall(src, imageMatrix);
 
-	Deriche edgeDetector(0.75);
+	// Canny
+	/*
+	cv::Mat dst, detected_edges;
+	cv::blur(imageMatrix, detected_edges, cv::Size(3, 3));
+	cv::Canny(detected_edges, detected_edges, 100, 100 * 3, 3);
+
+	dst = cv::Scalar::all(0);
+	imageMatrix.copyTo(dst, detected_edges);
+
+	IntensityImage * outputImage = ImageFactory::newIntensityImage();
+	HereBeDragons::NoWantOfConscienceHoldItThatICall(dst, *outputImage);
+	*/
+
+	// Deriche
+	Deriche edgeDetector(4);
 	edgeDetector.smooth(imageMatrix);
-	edgeDetector.derivativeX(imageMatrix);
+	cv::Mat temp, temp2;
+
+	imageMatrix.copyTo(temp);
+	imageMatrix.copyTo(temp2);
+
+	edgeDetector.derivativeX(temp);
+	edgeDetector.derivativeY(temp2);
+	
+	for (int i = 0; i < imageMatrix.rows; ++i) {
+		for (int j = 0; j < imageMatrix.cols; ++j) {
+			imageMatrix.at<uchar>(i, j) = (temp.at<uchar>(i, j) + temp2.at<uchar>(i, j)) / 2;
+		}
+	}
+
 	//std::cout << outputImageMatrix;
 	IntensityImage * outputImage = ImageFactory::newIntensityImage();
 	HereBeDragons::NoWantOfConscienceHoldItThatICall(imageMatrix, *outputImage);
 
 	return outputImage;
-
 } 
-
 
 IntensityImage * DefaultPreProcessing::stepThresholding(const IntensityImage &src) const {
 	cv::Mat OverHillOverDale;
