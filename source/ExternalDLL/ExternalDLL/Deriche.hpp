@@ -38,11 +38,7 @@ private:
 			for (j = 0; j < cols; ++j) {
 
 				//we transpose the image here!
-				double value = y1[j] + y2[j];
-				if (value < 0) {
-					value = -value;
-				}
-				dst.at<uchar>(j, i) = value;
+				dst.at<uchar>(j, i) = y1[j] + y2[j];
 			}
 		}
 	}
@@ -54,8 +50,8 @@ private:
 			pixelPointer = src.ptr<uchar>(i);
 
 			//do stuff for first 2 pixels NOTE: might need improvement.
-			y1[0] = 0;
-			y1[1] = pixelPointer[1]; // b1 * y1[0] = 0
+			y1[0] = pixelPointer[0];
+			y1[1] = pixelPointer[1] + b1 * y1[0];
 
 			for (j = 2; j < cols; ++j) {
 				y1[j] = pixelPointer[j - 1] + b1 * y1[j - 1] + b2 * y1[j - 2];
