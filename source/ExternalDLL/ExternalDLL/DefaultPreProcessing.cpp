@@ -68,22 +68,44 @@ IntensityImage * DefaultPreProcessing::stepEdgeDetection(const IntensityImage &s
 	// Deriche
 	Deriche edgeDetector(4);
 	edgeDetector.smooth(imageMatrix);
-	cv::Mat temp;
+	cv::Mat imageMatrixY, edge_gradients, angles;
 
-	imageMatrix.copyTo(temp);
+	// Prepare some of the required matrices.
+	imageMatrix.copyTo(imageMatrixY);
+	imageMatrix.copyTo(edge_gradients);
+	imageMatrix.copyTo(angles);
 
+	// Get both the x and y derivatives.
 	edgeDetector.derivativeX(imageMatrix);
-	edgeDetector.derivativeY(temp);
+	edgeDetector.derivativeY(imageMatrixY);
 	
-	for (int i = 0; i < imageMatrix.rows; ++i) {
-		for (int j = 0; j < imageMatrix.cols; ++j) {
-			imageMatrix.at<uchar>(i, j) = (imageMatrix.at<uchar>(i, j) + temp.at<uchar>(i, j)) / 2;
+	// Get gradient edges.
+	for (int x = 0; x < imageMatrix.rows; ++x) {
+		for (int y = 0; y < imageMatrix.cols; ++y) {
+			edge_gradients.at<uchar>(x, y) = hypot(imageMatrix.at<uchar>(x, y), imageMatrixY.at<uchar>(x, y));
 		}
 	}
 
+	// Get gradient directions.
+	for (int y = 0; y < imageMatrix.rows; ++y) {
+		for (int x = 0; x < imageMatrix.cols; ++x) {
+			float Ypixel = imageMatrixY.at<uchar>(x, y);
+			float Xpixel = imageMatrix.at<uchar>(x, y);
+
+			float degrees = atan2f(Ypixel, Xpixel) * (180.0f / CV_PI) * 2; // Convert radians to degrees. MULTIPLIED BY 2 TO GET TO 180 MIGHT BE WRONG.
+
+			angles.at<uchar>(x, y) = (uchar)(round(degrees / 45.0f) * 45.0f) % 180; // Round to nearest 45 for non-max-suppression.
+			//std::cout << +angles.at<uchar>(x, y) << " " << degrees << " " << atan2f(Ypixel, Xpixel) << "\n";
+			//if (angles.at<uchar>(x, y) == 135) std::cout << "REEEEEEEEEEEEEEEEE\n";
+		}
+		//std::cout << std::endl;
+	}
+
+	edgeDetector.nonMaxSuppression(edge_gradients, angles);
+
 	//std::cout << outputImageMatrix;
 	IntensityImage * outputImage = ImageFactory::newIntensityImage();
-	HereBeDragons::NoWantOfConscienceHoldItThatICall(imageMatrix, *outputImage);
+	HereBeDragons::NoWantOfConscienceHoldItThatICall(edge_gradients, *outputImage);
 
 	return outputImage;
 } 

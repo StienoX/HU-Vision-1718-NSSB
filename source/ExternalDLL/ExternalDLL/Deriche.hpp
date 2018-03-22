@@ -156,4 +156,36 @@ public:
 		dericheIIR(matrix, tempMatrix, rows, cols, y1, y2);
 		dericheIIR2(tempMatrix, matrix, cols, rows, y1, y2);
 	}
+
+	void nonMaxSuppression(cv::Mat & gradient_edges, cv::Mat & directions) {
+		for (int y = 1; y < gradient_edges.rows - 1; ++y) {
+			uchar * gradPointer = gradient_edges.ptr<uchar>(y);
+			uchar * dirPointer = directions.ptr<uchar>(y);
+
+			for (int x = 1; x < gradient_edges.cols - 1; ++x) {
+				switch (dirPointer[x]) {
+					case 0:
+						if (gradPointer[x - 1] > gradPointer[x] || gradPointer[x] < gradPointer[x + 1]) {
+							gradPointer[x] = 0;
+						}
+						break;
+					case 45:
+						if ((gradPointer - 1)[x + 1] > gradPointer[x] || gradPointer[x] < (gradPointer + 1)[x - 1]) {
+							gradPointer[x] = 0;
+						}
+						break;
+					case 90:
+						if ((gradPointer - 1)[x] > gradPointer[x] || gradPointer[x] < (gradPointer + 1)[x]) {
+							gradPointer[x] = 0;
+						}
+						break;
+					case 135:
+						if ((gradPointer - 1)[x - 1] > gradPointer[x] || gradPointer[x] < (gradPointer + 1)[x + 1]) {
+							gradPointer[x] = 0;
+						}
+						break;
+				}
+			}
+		}
+	}
 };
