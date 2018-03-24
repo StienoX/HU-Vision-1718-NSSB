@@ -68,44 +68,46 @@ IntensityImage * DefaultPreProcessing::stepEdgeDetection(const IntensityImage &s
 	// Deriche
 	Deriche edgeDetector(4);
 	edgeDetector.smooth(imageMatrix);
-	cv::Mat imageMatrixY, edge_gradients, angles;
 
-	// Prepare some of the required matrices.
+	cv::Mat imageMatrixX, imageMatrixY;
+	imageMatrix.copyTo(imageMatrixX);
 	imageMatrix.copyTo(imageMatrixY);
-	imageMatrix.copyTo(edge_gradients);
-	imageMatrix.copyTo(angles);
+	
+	cv::Mat edge_gradients = cv::Mat(imageMatrixX.rows, imageMatrixX.cols, CV_32FC1);
+	cv::Mat angles = cv::Mat(imageMatrixX.rows, imageMatrixX.cols, CV_8UC1);
 
 	// Get both the x and y derivatives.
-	edgeDetector.derivativeX(imageMatrix);
+	edgeDetector.derivativeX(imageMatrixX);
 	edgeDetector.derivativeY(imageMatrixY);
 	
 	// Get gradient edges.
-	for (int x = 0; x < imageMatrix.rows; ++x) {
-		for (int y = 0; y < imageMatrix.cols; ++y) {
-			edge_gradients.at<uchar>(x, y) = hypot(imageMatrix.at<uchar>(x, y), imageMatrixY.at<uchar>(x, y));
+	for (int x = 0; x < imageMatrixX.rows; ++x) {
+		for (int y = 0; y < imageMatrixX.cols; ++y) {
+			edge_gradients.at<float>(x, y) = hypotf(imageMatrixX.at<float>(x, y), imageMatrixY.at<float>(x, y));
 		}
 	}
 
 	// Get gradient directions.
-	for (int y = 0; y < imageMatrix.rows; ++y) {
-		for (int x = 0; x < imageMatrix.cols; ++x) {
-			float Ypixel = imageMatrixY.at<uchar>(x, y);
-			float Xpixel = imageMatrix.at<uchar>(x, y);
+	for (int y = 0; y < imageMatrixY.rows; ++y) {
+		for (int x = 0; x < imageMatrixX.cols; ++x) {
+			float Ypixel = imageMatrixY.at<float>(x, y);
+			float Xpixel = imageMatrixX.at<float>(x, y);
 
-			float degrees = atan2f(Ypixel, Xpixel) * (180.0f / CV_PI) * 2; // Convert radians to degrees. MULTIPLIED BY 2 TO GET TO 180 MIGHT BE WRONG.
-
-			angles.at<uchar>(x, y) = (uchar)(round(degrees / 45.0f) * 45.0f) % 180; // Round to nearest 45 for non-max-suppression.
-			//std::cout << +angles.at<uchar>(x, y) << " " << degrees << " " << atan2f(Ypixel, Xpixel) << "\n";
-			//if (angles.at<uchar>(x, y) == 135) std::cout << "REEEEEEEEEEEEEEEEE\n";
+			float degrees = atan2f(Ypixel, Xpixel) * (180.0f / 3.14159265358979f); // Convert radians to degrees using the float version of pi.
+			
+			if (degrees < 0) degrees = -degrees;
+			
+			angles.at<uchar>(x, y) = (uchar)(roundf(degrees / 45.0f) * 45.0f) % 180; // Round to nearest 45 for non-max-suppression.
+			//std::cout << +angles.at<uchar>(x, y) << " " << degrees << " " << "\n";
 		}
 		//std::cout << std::endl;
 	}
 
-	edgeDetector.nonMaxSuppression(edge_gradients, angles);
+	cv::Mat output = edgeDetector.nonMaxSuppression(edge_gradients, angles);
+	output.convertTo(output, CV_8UC1);
 
-	//std::cout << outputImageMatrix;
 	IntensityImage * outputImage = ImageFactory::newIntensityImage();
-	HereBeDragons::NoWantOfConscienceHoldItThatICall(edge_gradients, *outputImage);
+	HereBeDragons::NoWantOfConscienceHoldItThatICall(output, *outputImage);
 
 	return outputImage;
 } 

@@ -6,17 +6,17 @@
 
 class Deriche {
 private:
-	double k, a1, a2, a3, a4, b1, b2, c;
-	double sigma;
-	double expNeqSigma, expNeq2Sigma;
-	uchar* pixelPointer;
+	float k, a1, a2, a3, a4, b1, b2, c;
+	float sigma;
+	float expNeqSigma, expNeq2Sigma;
 
-
-	void dericheIIR(cv::Mat & src, cv::Mat & dst, const int & rows, const int & cols, std::vector<double> & y1, std::vector<double> & y2) {
+	template<typename T>
+	void dericheIIR(cv::Mat & src, cv::Mat & dst, const int & rows, const int & cols, std::vector<float> & y1, std::vector<float> & y2) {
 		int i, j;
-		
+		T * pixelPointer;
+
 		for (i = 0; i < rows; ++i) {
-			pixelPointer = src.ptr<uchar>(i);
+			pixelPointer = src.ptr<T>(i);
 
 			//do stuff for first 2 pixels NOTE: might need improvement.
 			y1[0] = a1 * pixelPointer[0];
@@ -38,16 +38,18 @@ private:
 			for (j = 0; j < cols; ++j) {
 
 				//we transpose the image here!
-				dst.at<uchar>(j, i) = y1[j] + y2[j];
+				dst.at<T>(j, i) = y1[j] + y2[j];
 			}
 		}
 	}
 
-	void dericheIIR2(cv::Mat & src, cv::Mat & dst, const int & rows, const int & cols, std::vector<double> & y1, std::vector<double> & y2) {
+	template<typename T>
+	void dericheIIR2(cv::Mat & src, cv::Mat & dst, const int & rows, const int & cols, std::vector<float> & y1, std::vector<float> & y2) {
 		int i, j;
+		T * pixelPointer;
 
 		for (i = 0; i < rows; ++i) {
-			pixelPointer = src.ptr<uchar>(i);
+			pixelPointer = src.ptr<T>(i);
 
 			//do stuff for first 2 pixels NOTE: might need improvement.
 			y1[0] = pixelPointer[0];
@@ -69,33 +71,29 @@ private:
 			for (j = 0; j < cols; ++j) {
 
 				//we transpose the image here!
-				double value = c * (y1[j] + y2[j]);
-				if (value < 0) {
-					value = -value;
-				}
-				dst.at<uchar>(j, i) = (uchar)value;
+				dst.at<T>(j, i) = c * (y1[j] + y2[j]);
 			}
 		}
 	}
 
 public:
-	Deriche(const double & new_sigma = 1) {
+	Deriche(const float & new_sigma = 1.f) {
 		setSigma(new_sigma);
 	};
 
-	void setSigma(const double & new_sigma) {
+	void setSigma(const float & new_sigma) {
 		sigma = new_sigma;
 		// calculate using the deriche coefficients. see https://en.wikipedia.org/wiki/Deriche_edge_detector and http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.476.5736&rep=rep1&type=pdf for more information.
-		expNeqSigma = exp(-sigma);
-		expNeq2Sigma = exp(-2 * sigma);
-		k = pow(1 - expNeqSigma, 2.0) / (1 + 2 * sigma*expNeqSigma - expNeq2Sigma);
-		b1 = 2 * expNeqSigma;
+		expNeqSigma = expf(-sigma);
+		expNeq2Sigma = expf(-2.f * sigma);
+		k = powf(1.f - expNeqSigma, 2.f) / (1.f + 2.f * sigma * expNeqSigma - expNeq2Sigma);
+		b1 = 2.f * expNeqSigma;
 		b2 = -expNeq2Sigma;
 		a1 = k;
-		a2 = k * expNeqSigma * (sigma - 1);
-		a3 = k * expNeqSigma * (sigma + 1);
+		a2 = k * expNeqSigma * (sigma - 1.f);
+		a3 = k * expNeqSigma * (sigma + 1.f);
 		a4 = -k * expNeq2Sigma;
-		c = -pow(1 - expNeqSigma, 2.0);
+		c = -powf(1.f - expNeqSigma, 2.f);
 
 		std::cout << "DEBUG\n" <<
 			"Sigma: " << sigma << "\n" <<
@@ -109,83 +107,88 @@ public:
 	void smooth(cv::Mat & matrix) {
 
 		//asserting if its not CV_8U (unsigned char type matrix)
-		CV_Assert(matrix.depth() == CV_8U);
+		CV_Assert(matrix.depth() == CV_8UC1 || matrix.depth() == CV_32FC1);
+
+		if (matrix.depth() == CV_8UC1) {
+			matrix.convertTo(matrix, CV_32FC1); // Convert matrix to float.
+		}
 
 		const int rows = matrix.rows;
 		const int cols = matrix.cols;
 
-		cv::Mat tempMatrix = cv::Mat(cols, rows, CV_8U);
+		cv::Mat tempMatrix = cv::Mat(cols, rows, CV_32FC1);
 
-		std::vector<double> y1((cols >= rows) ? cols : rows);
-		std::vector<double> y2((cols >= rows) ? cols : rows);
-		
-		dericheIIR(matrix, tempMatrix, rows, cols, y1, y2);
-		dericheIIR(tempMatrix, matrix, cols, rows, y1, y2);
+		std::vector<float> y1((cols >= rows) ? cols : rows);
+		std::vector<float> y2((cols >= rows) ? cols : rows);
+
+		dericheIIR<float>(matrix, tempMatrix, rows, cols, y1, y2);
+		dericheIIR<float>(tempMatrix, matrix, cols, rows, y1, y2);
 	}
 
 	void derivativeX(cv::Mat & matrix) {
 
 		//asserting if its not CV_8U (unsigned char type matrix)
-		CV_Assert(matrix.depth() == CV_8U);
+		CV_Assert(matrix.depth() == CV_32FC1);
 
 		const int rows = matrix.rows;
 		const int cols = matrix.cols;
 
-		cv::Mat tempMatrix = cv::Mat(cols, rows, CV_8U);
+		cv::Mat tempMatrix = cv::Mat(cols, rows, CV_32FC1);
 
-		std::vector<double> y1((cols >= rows) ? cols : rows);
-		std::vector<double> y2((cols >= rows) ? cols : rows);
+		std::vector<float> y1((cols >= rows) ? cols : rows);
+		std::vector<float> y2((cols >= rows) ? cols : rows);
 
-		dericheIIR2(matrix, tempMatrix, rows, cols, y1, y2);
-		dericheIIR(tempMatrix, matrix, cols, rows, y1, y2);
+		dericheIIR2<float>(matrix, tempMatrix, rows, cols, y1, y2);
+		dericheIIR<float>(tempMatrix, matrix, cols, rows, y1, y2);
 	}
 
 	void derivativeY(cv::Mat & matrix) {
 
 		//asserting if its not CV_8U (unsigned char type matrix)
-		CV_Assert(matrix.depth() == CV_8U);
+		CV_Assert(matrix.depth() == CV_32FC1);
 
 		const int rows = matrix.rows;
 		const int cols = matrix.cols;
 
-		cv::Mat tempMatrix = cv::Mat(cols, rows, CV_8U);
+		cv::Mat tempMatrix = cv::Mat(cols, rows, CV_32FC1);
 
-		std::vector<double> y1((cols >= rows) ? cols : rows);
-		std::vector<double> y2((cols >= rows) ? cols : rows);
+		std::vector<float> y1((cols >= rows) ? cols : rows);
+		std::vector<float> y2((cols >= rows) ? cols : rows);
 
-		dericheIIR(matrix, tempMatrix, rows, cols, y1, y2);
-		dericheIIR2(tempMatrix, matrix, cols, rows, y1, y2);
+		dericheIIR<float>(matrix, tempMatrix, rows, cols, y1, y2);
+		dericheIIR2<float>(tempMatrix, matrix, cols, rows, y1, y2);
 	}
 
-	void nonMaxSuppression(cv::Mat & gradient_edges, cv::Mat & directions) {
+	cv::Mat nonMaxSuppression(cv::Mat & gradient_edges, cv::Mat & directions) {
 		for (int y = 1; y < gradient_edges.rows - 1; ++y) {
-			uchar * gradPointer = gradient_edges.ptr<uchar>(y);
+			float * gradPointer = gradient_edges.ptr<float>(y);
 			uchar * dirPointer = directions.ptr<uchar>(y);
 
 			for (int x = 1; x < gradient_edges.cols - 1; ++x) {
 				switch (dirPointer[x]) {
 					case 0:
-						if (gradPointer[x - 1] > gradPointer[x] || gradPointer[x] < gradPointer[x + 1]) {
+						if (gradient_edges.at<float>(y, x - 1) > gradPointer[x] || gradPointer[x] < gradient_edges.at<float>(y, x + 1)) {
 							gradPointer[x] = 0;
 						}
 						break;
 					case 45:
-						if ((gradPointer - 1)[x + 1] > gradPointer[x] || gradPointer[x] < (gradPointer + 1)[x - 1]) {
+						if (gradient_edges.at<float>(y - 1, x + 1) > gradPointer[x] || gradPointer[x] < gradient_edges.at<float>(y + 1, x - 1)) {
 							gradPointer[x] = 0;
 						}
 						break;
 					case 90:
-						if ((gradPointer - 1)[x] > gradPointer[x] || gradPointer[x] < (gradPointer + 1)[x]) {
+						if (gradient_edges.at<float>(y - 1, x) > gradPointer[x] || gradPointer[x] < gradient_edges.at<float>(y + 1, x)) {
 							gradPointer[x] = 0;
 						}
 						break;
 					case 135:
-						if ((gradPointer - 1)[x - 1] > gradPointer[x] || gradPointer[x] < (gradPointer + 1)[x + 1]) {
+						if (gradient_edges.at<float>(y - 1, x - 1) > gradPointer[x] || gradPointer[x] < gradient_edges.at<float>(y + 1, x + 1)) {
 							gradPointer[x] = 0;
 						}
 						break;
 				}
 			}
 		}
+		return gradient_edges;
 	}
 };
