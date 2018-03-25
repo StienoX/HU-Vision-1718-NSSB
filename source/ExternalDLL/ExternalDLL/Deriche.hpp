@@ -159,10 +159,10 @@ public:
 		dericheIIR2<float>(tempMatrix, matrix, cols, rows, y1, y2);
 	}
 
-	cv::Mat nonMaxSuppression(cv::Mat & gradient_edges, cv::Mat & directions) {
+	cv::Mat nonMaxSuppression(cv::Mat & gradient_edges, cv::Mat & gradient_directions) {
 		for (int y = 1; y < gradient_edges.rows - 1; ++y) {
 			float * gradPointer = gradient_edges.ptr<float>(y);
-			uchar * dirPointer = directions.ptr<uchar>(y);
+			uchar * dirPointer = gradient_directions.ptr<uchar>(y);
 
 			for (int x = 1; x < gradient_edges.cols - 1; ++x) {
 				switch (dirPointer[x]) {

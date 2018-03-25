@@ -66,7 +66,7 @@ IntensityImage * DefaultPreProcessing::stepEdgeDetection(const IntensityImage &s
 	*/
 
 	// Deriche
-	Deriche edgeDetector(4);
+	Deriche edgeDetector(3);
 	edgeDetector.smooth(imageMatrix);
 
 	cv::Mat imageMatrixX, imageMatrixY;
@@ -88,17 +88,17 @@ IntensityImage * DefaultPreProcessing::stepEdgeDetection(const IntensityImage &s
 	}
 
 	// Get gradient directions.
-	for (int y = 0; y < imageMatrixY.rows; ++y) {
+	for (int y = 0; y < imageMatrixX.rows; ++y) {
 		for (int x = 0; x < imageMatrixX.cols; ++x) {
 			float Ypixel = imageMatrixY.at<float>(x, y);
 			float Xpixel = imageMatrixX.at<float>(x, y);
 
-			float degrees = atan2f(Ypixel, Xpixel) * (180.0f / 3.14159265358979f); // Convert radians to degrees using the float version of pi.
+			float degrees = atan2f(Ypixel, Xpixel) * (180.f / 3.14159265358979f); // Convert radians to degrees using the float version of pi.
 			
-			if (degrees < 0) degrees = -degrees;
+			if (degrees < 0.f) degrees = -degrees;
 			
-			angles.at<uchar>(x, y) = (uchar)(roundf(degrees / 45.0f) * 45.0f) % 180; // Round to nearest 45 for non-max-suppression.
-			//std::cout << +angles.at<uchar>(x, y) << " " << degrees << " " << "\n";
+			angles.at<uchar>(x, y) = (uchar)(roundf(degrees / 45.f) * 45.f) % 180; // Round to nearest 45 for non-max-suppression.
+			std::cout << +angles.at<uchar>(x, y) << " " << degrees << " " << "\n";
 		}
 		//std::cout << std::endl;
 	}
