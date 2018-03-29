@@ -70,8 +70,8 @@ IntensityImage * DefaultPreProcessing::stepEdgeDetection(const IntensityImage &s
 	edgeDetector.smooth(imageMatrix);
 
 	cv::Mat imageMatrixX, imageMatrixY;
-	imageMatrix.copyTo(imageMatrixX);
-	imageMatrix.copyTo(imageMatrixY);
+	imageMatrix.convertTo(imageMatrixX, CV_32FC1);
+	imageMatrix.convertTo(imageMatrixY, CV_32FC1);
 	
 	cv::Mat edge_gradients = cv::Mat(imageMatrixX.rows, imageMatrixX.cols, CV_32FC1);
 	cv::Mat angles = cv::Mat(imageMatrixX.rows, imageMatrixX.cols, CV_8UC1);
@@ -88,17 +88,17 @@ IntensityImage * DefaultPreProcessing::stepEdgeDetection(const IntensityImage &s
 	}
 
 	// Get gradient directions.
-	for (int y = 0; y < imageMatrixX.rows; ++y) {
+	for (int y = 0; y < imageMatrixY.rows; ++y) {
 		for (int x = 0; x < imageMatrixX.cols; ++x) {
 			float Ypixel = imageMatrixY.at<float>(x, y);
-			float Xpixel = imageMatrixX.at<float>(x, y);
+			float Xpixel = imageMatrixX.at<float>(x, y); // Access violation on some images.
 
 			float degrees = atan2f(Ypixel, Xpixel) * (180.f / 3.14159265358979f); // Convert radians to degrees using the float version of pi.
-			
+
 			if (degrees < 0.f) degrees = -degrees;
-			
+
 			angles.at<uchar>(x, y) = (uchar)(roundf(degrees / 45.f) * 45.f) % 180; // Round to nearest 45 for non-max-suppression.
-			std::cout << +angles.at<uchar>(x, y) << " " << degrees << " " << "\n";
+			//std::cout << +angles.at<uchar>(x, y) << " " << degrees << " " << "\n";
 		}
 		//std::cout << std::endl;
 	}

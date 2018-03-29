@@ -160,35 +160,56 @@ public:
 	}
 
 	cv::Mat nonMaxSuppression(cv::Mat & gradient_edges, cv::Mat & gradient_directions) {
+		cv::Mat output;
+		gradient_edges.convertTo(output, CV_8UC1);
+
+		float * gradPointer;
+		uchar * dirPointer, *outputPointer;
+
+		// All other pixels
 		for (int y = 1; y < gradient_edges.rows - 1; ++y) {
-			float * gradPointer = gradient_edges.ptr<float>(y);
-			uchar * dirPointer = gradient_directions.ptr<uchar>(y);
+			gradPointer = gradient_edges.ptr<float>(y);
+			dirPointer = gradient_directions.ptr<uchar>(y);
+			outputPointer = output.ptr<uchar>(y);
 
 			for (int x = 1; x < gradient_edges.cols - 1; ++x) {
 				switch (dirPointer[x]) {
 					case 0:
-						if (gradient_edges.at<float>(y, x - 1) > gradPointer[x] || gradPointer[x] < gradient_edges.at<float>(y, x + 1)) {
-							gradPointer[x] = 0;
+						if (gradient_edges.at<float>(y, x - 1) > gradPointer[x] || 
+							gradient_edges.at<float>(y, x + 1) > gradPointer[x]) {
+							outputPointer[x] = 0;
+						} else {
+							outputPointer[x] = (uchar)gradPointer[x];
 						}
 						break;
 					case 45:
-						if (gradient_edges.at<float>(y - 1, x + 1) > gradPointer[x] || gradPointer[x] < gradient_edges.at<float>(y + 1, x - 1)) {
-							gradPointer[x] = 0;
+						if (gradient_edges.at<float>(y - 1, x + 1) > gradPointer[x] ||
+							gradient_edges.at<float>(y + 1, x - 1) > gradPointer[x]) {
+							outputPointer[x] = 0;
+						} else {
+							outputPointer[x] = (uchar)gradPointer[x];
 						}
 						break;
 					case 90:
-						if (gradient_edges.at<float>(y - 1, x) > gradPointer[x] || gradPointer[x] < gradient_edges.at<float>(y + 1, x)) {
-							gradPointer[x] = 0;
+						if (gradient_edges.at<float>(y - 1, x) > gradPointer[x] ||
+							gradient_edges.at<float>(y + 1, x) > gradPointer[x]) {
+							outputPointer[x] = 0;
+						} else {
+							outputPointer[x] = (uchar)gradPointer[x];
 						}
 						break;
 					case 135:
-						if (gradient_edges.at<float>(y - 1, x - 1) > gradPointer[x] || gradPointer[x] < gradient_edges.at<float>(y + 1, x + 1)) {
-							gradPointer[x] = 0;
+						if (gradient_edges.at<float>(y - 1, x - 1) > gradPointer[x] || 
+							gradient_edges.at<float>(y + 1, x + 1) > gradPointer[x]) {
+							outputPointer[x] = 0;
+						} else {
+							outputPointer[x] = (uchar)gradPointer[x];
 						}
 						break;
 				}
 			}
 		}
-		return gradient_edges;
+
+		return output;
 	}
 };
