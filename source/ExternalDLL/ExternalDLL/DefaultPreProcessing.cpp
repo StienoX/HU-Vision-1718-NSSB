@@ -113,10 +113,24 @@ IntensityImage * DefaultPreProcessing::stepEdgeDetection(const IntensityImage &s
 } 
 
 IntensityImage * DefaultPreProcessing::stepThresholding(const IntensityImage &src) const {
-	cv::Mat OverHillOverDale;
-	HereBeDragons::HerLoveForWhoseDearLoveIRiseAndFall(src, OverHillOverDale);
-	cv::threshold(OverHillOverDale, OverHillOverDale, 220, 255, cv::THRESH_BINARY_INV);
-	IntensityImage * ThoroughBushThoroughBrier = ImageFactory::newIntensityImage();
-	HereBeDragons::NoWantOfConscienceHoldItThatICall(OverHillOverDale, *ThoroughBushThoroughBrier);
-	return ThoroughBushThoroughBrier;
+	cv::Mat SourceImage;
+	HereBeDragons::HerLoveForWhoseDearLoveIRiseAndFall(src, SourceImage);
+
+	uchar * pixelPointer;
+
+	uchar high = 80;
+	uchar low = 30;
+
+	for (int i = 0; i < SourceImage.rows; ++i) {
+		pixelPointer = SourceImage.ptr<uchar>(i);
+		for (int j = 0; j < SourceImage.cols; ++j) {
+			if (pixelPointer[j] >= high) pixelPointer[j] = 255;
+			else if (pixelPointer[j] >= low) pixelPointer[j] = 128;
+			else pixelPointer[j] = 0;
+		}
+	}
+
+	IntensityImage * ResultImage = ImageFactory::newIntensityImage();
+	HereBeDragons::NoWantOfConscienceHoldItThatICall(SourceImage, *ResultImage);
+	return ResultImage;
 }
