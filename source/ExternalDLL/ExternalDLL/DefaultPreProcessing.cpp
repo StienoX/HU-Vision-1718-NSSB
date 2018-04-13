@@ -112,27 +112,6 @@ IntensityImage * DefaultPreProcessing::stepEdgeDetection(const IntensityImage &s
 	return outputImage;
 } 
 
-uchar getMax(const IntensityImage &src) {
-	cv::Mat SourceImage;
-	HereBeDragons::HerLoveForWhoseDearLoveIRiseAndFall(src, SourceImage);
-
-	uchar * pixelPointer;
-
-	uchar highThreshold = 0;
-
-	for (int i = 0; i < SourceImage.rows; ++i) {
-		pixelPointer = SourceImage.ptr<uchar>(i);
-		for (int j = 0; j < SourceImage.cols; ++j) {
-			if (pixelPointer[j] > highThreshold) {
-				highThreshold = pixelPointer[j];
-				if (highThreshold == 255) return highThreshold;
-			}
-		}
-	}
-
-	return highThreshold;
-}
-
 IntensityImage * DefaultPreProcessing::stepThresholding(const IntensityImage &src) const {
 	cv::Mat SourceImage;
 	HereBeDragons::HerLoveForWhoseDearLoveIRiseAndFall(src, SourceImage);
@@ -142,10 +121,21 @@ IntensityImage * DefaultPreProcessing::stepThresholding(const IntensityImage &sr
 	int highThresholdRatio = 3;
 	int lowThresholdRatio = 3;
 
-	uchar highThreshold = getMax(src) / highThresholdRatio;
+	uchar max_pixel = 0;
+	for (int i = 0; i < SourceImage.rows; ++i) {
+		pixelPointer = SourceImage.ptr<uchar>(i);
+		for (int j = 0; j < SourceImage.cols; ++j) {
+			if (pixelPointer[j] > max_pixel) {
+				max_pixel = pixelPointer[j];
+			}
+			else if (max_pixel == 255) {
+				break;
+			}
+		}
+	}
+
+	uchar highThreshold = max_pixel / highThresholdRatio;
 	uchar lowThreshold = highThreshold / lowThresholdRatio;
-
-
 
 	for (int i = 0; i < SourceImage.rows; ++i) {
 		pixelPointer = SourceImage.ptr<uchar>(i);
@@ -155,6 +145,22 @@ IntensityImage * DefaultPreProcessing::stepThresholding(const IntensityImage &sr
 			else pixelPointer[j] = 0;
 		}
 	}
+	/*
+	for (int i = 0; i < SourceImage.rows; ++i) {
+		pixelPointer = SourceImage.ptr<uchar>(i);
+		for (int j = 0; j < SourceImage.cols; ++j) {
+
+			for (int a = -1; a < 1; ++a) {
+				pixelPointer = SourceImage.ptr<uchar>(i + a);
+				for (int b = -1; b < 1; ++b) {
+
+				}
+			}
+
+
+		}
+	}
+	*/
 
 	IntensityImage * ResultImage = ImageFactory::newIntensityImage();
 	HereBeDragons::NoWantOfConscienceHoldItThatICall(SourceImage, *ResultImage);
