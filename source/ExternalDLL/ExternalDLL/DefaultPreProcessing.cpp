@@ -112,20 +112,46 @@ IntensityImage * DefaultPreProcessing::stepEdgeDetection(const IntensityImage &s
 	return outputImage;
 } 
 
+uchar getMax(const IntensityImage &src) {
+	cv::Mat SourceImage;
+	HereBeDragons::HerLoveForWhoseDearLoveIRiseAndFall(src, SourceImage);
+
+	uchar * pixelPointer;
+
+	uchar highThreshold = 0;
+
+	for (int i = 0; i < SourceImage.rows; ++i) {
+		pixelPointer = SourceImage.ptr<uchar>(i);
+		for (int j = 0; j < SourceImage.cols; ++j) {
+			if (pixelPointer[j] > highThreshold) {
+				highThreshold = pixelPointer[j];
+				if (highThreshold == 255) return highThreshold;
+			}
+		}
+	}
+
+	return highThreshold;
+}
+
 IntensityImage * DefaultPreProcessing::stepThresholding(const IntensityImage &src) const {
 	cv::Mat SourceImage;
 	HereBeDragons::HerLoveForWhoseDearLoveIRiseAndFall(src, SourceImage);
 
 	uchar * pixelPointer;
 
-	uchar high = 80;
-	uchar low = 30;
+	int highThresholdRatio = 3;
+	int lowThresholdRatio = 3;
+
+	uchar highThreshold = getMax(src) / highThresholdRatio;
+	uchar lowThreshold = highThreshold / lowThresholdRatio;
+
+
 
 	for (int i = 0; i < SourceImage.rows; ++i) {
 		pixelPointer = SourceImage.ptr<uchar>(i);
 		for (int j = 0; j < SourceImage.cols; ++j) {
-			if (pixelPointer[j] >= high) pixelPointer[j] = 255;
-			else if (pixelPointer[j] >= low) pixelPointer[j] = 128;
+			if (pixelPointer[j] >= highThreshold) pixelPointer[j] = 255;
+			else if (pixelPointer[j] >= lowThreshold) pixelPointer[j] = 128;
 			else pixelPointer[j] = 0;
 		}
 	}
