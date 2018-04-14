@@ -125,6 +125,7 @@ IntensityImage * DefaultPreProcessing::stepThresholding(const IntensityImage &sr
 	int highThresholdRatio = 3;
 	int lowThresholdRatio = 3;
 
+	// Determine highest mixel value
 	uchar max_pixel = 0;
 	for (int i = 0; i < SourceImage.rows; ++i) {
 		pixelPointer = SourceImage.ptr<uchar>(i);
@@ -141,6 +142,7 @@ IntensityImage * DefaultPreProcessing::stepThresholding(const IntensityImage &sr
 	uchar highThreshold = max_pixel / highThresholdRatio;
 	uchar lowThreshold = highThreshold / lowThresholdRatio;
 
+	// Find high and weak edges (double thresholding)
 	for (int i = 0; i < SourceImage.rows; ++i) {
 		pixelPointer = SourceImage.ptr<uchar>(i);
 		for (int j = 0; j < SourceImage.cols; ++j) {
@@ -149,22 +151,25 @@ IntensityImage * DefaultPreProcessing::stepThresholding(const IntensityImage &sr
 			else pixelPointer[j] = 0;
 		}
 	}
-	/*
-	for (int i = 0; i < SourceImage.rows; ++i) {
+	
+	// Follow weak edges (edge tracking by hysteresis)
+	for (int i = 1; i < SourceImage.rows - 1; ++i) {
 		pixelPointer = SourceImage.ptr<uchar>(i);
-		for (int j = 0; j < SourceImage.cols; ++j) {
-
-			for (int a = -1; a < 1; ++a) {
-				pixelPointer = SourceImage.ptr<uchar>(i + a);
-				for (int b = -1; b < 1; ++b) {
-
+		for (int j = 1; j < SourceImage.cols - 1; ++j) {
+			bool connected = false;
+			if (pixelPointer[j] == 128) {
+				for (int a = i - 1; a < i + 1; ++a) {
+					if (connected) break;
+					for (int b = j - 1; b < i + 1; ++b) {
+						if (SourceImage.at<uchar>(a, b) == 255) connected = true;
+					}
 				}
+				if (!connected) pixelPointer[j] = 0;
+				else pixelPointer[j] = 255;
 			}
-
-
 		}
 	}
-	*/
+	
 
 	IntensityImage * ResultImage = ImageFactory::newIntensityImage();
 	HereBeDragons::NoWantOfConscienceHoldItThatICall(SourceImage, *ResultImage);
