@@ -67,6 +67,7 @@ IntensityImage * DefaultPreProcessing::stepEdgeDetection(const IntensityImage &s
 
 	// Deriche
 	Deriche edgeDetector(3);
+	/*
 	edgeDetector.smooth(imageMatrix);
 
 	cv::Mat imageMatrixX, imageMatrixY;
@@ -104,8 +105,11 @@ IntensityImage * DefaultPreProcessing::stepEdgeDetection(const IntensityImage &s
 	}
 
 	cv::Mat output = edgeDetector.nonMaxSuppression(edge_gradients, angles);
-	output.convertTo(output, CV_8UC1);
-
+	//output.convertTo(output, CV_8UC1);
+	*/
+	
+	cv::Mat output = edgeDetector.deriche(imageMatrix);
+	
 	IntensityImage * outputImage = ImageFactory::newIntensityImage();
 	HereBeDragons::NoWantOfConscienceHoldItThatICall(output, *outputImage);
 

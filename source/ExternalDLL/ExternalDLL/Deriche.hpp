@@ -159,6 +159,62 @@ public:
 		dericheIIR2<float>(tempMatrix, matrix, cols, rows, y1, y2);
 	}
 
+	cv::Mat deriche(cv::Mat & matrix) {
+		if (matrix.depth() != CV_32FC1) {
+			matrix.convertTo(matrix, CV_32FC1);
+		}
+
+		const int rows = matrix.rows;
+		const int cols = matrix.cols;
+
+		cv::Mat tempMatrix = cv::Mat(cols, rows, CV_32FC1);
+
+		std::vector<float> y1((cols >= rows) ? cols : rows);
+		std::vector<float> y2((cols >= rows) ? cols : rows);
+
+		// Smooth
+		dericheIIR<float>(matrix, tempMatrix, rows, cols, y1, y2);
+		dericheIIR<float>(tempMatrix, matrix, cols, rows, y1, y2);
+
+		// Prepare derivative matrices.
+		cv::Mat imageMatrixX, imageMatrixY;
+		matrix.convertTo(imageMatrixX, CV_32FC1);
+		matrix.convertTo(imageMatrixY, CV_32FC1);
+
+		// Gradient derivative X.
+		dericheIIR2<float>(imageMatrixX, tempMatrix, rows, cols, y1, y2);
+		dericheIIR<float>(tempMatrix, imageMatrixX, cols, rows, y1, y2);
+
+		// Gradient derivative Y.
+		dericheIIR<float>(imageMatrixY, tempMatrix, rows, cols, y1, y2);
+		dericheIIR2<float>(tempMatrix, imageMatrixY, cols, rows, y1, y2);
+
+		// Get gradient edges.
+		cv::Mat edge_gradients = cv::Mat(imageMatrixX.rows, imageMatrixX.cols, CV_32FC1);
+		for (int x = 0; x < imageMatrixX.rows; ++x) {
+			for (int y = 0; y < imageMatrixX.cols; ++y) {
+				edge_gradients.at<float>(x, y) = hypotf(imageMatrixX.at<float>(x, y), imageMatrixY.at<float>(x, y));
+			}
+		}
+
+		// Get gradient directions.
+		cv::Mat angles = cv::Mat(imageMatrixX.rows, imageMatrixX.cols, CV_8UC1);
+		for (int y = 0; y < imageMatrixY.rows; ++y) {
+			for (int x = 0; x < imageMatrixX.cols; ++x) {
+				float Ypixel = imageMatrixY.at<float>(x, y);
+				float Xpixel = imageMatrixX.at<float>(x, y); // Access violation on some images.
+
+				float degrees = atan2f(Ypixel, Xpixel) * (180.f / 3.14159265358979f); // Convert radians to degrees using the float version of pi.
+
+				if (degrees < 0.f) degrees = -degrees;
+
+				angles.at<uchar>(x, y) = (uchar)(roundf(degrees / 45.f) * 45.f) % 180; // Round to nearest 45 for non-max-suppression.
+			}
+		}
+
+		return nonMaxSuppression(edge_gradients, angles);
+	}
+
 	cv::Mat nonMaxSuppression(cv::Mat & gradient_edges, cv::Mat & gradient_directions) {
 		cv::Mat output;
 		gradient_edges.convertTo(output, CV_8UC1);
