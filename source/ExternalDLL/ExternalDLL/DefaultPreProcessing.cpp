@@ -22,32 +22,16 @@ IntensityImage * DefaultPreProcessing::stepToIntensityImage(const RGBImage &src)
 IntensityImage * DefaultPreProcessing::stepScaleImage(const IntensityImage &src) const {
 	cv::Mat OverHillOverDale;
 	HereBeDragons::HerLoveForWhoseDearLoveIRiseAndFall(src, OverHillOverDale);
-	/*
-	int ThoroughBushThoroughBrier = 400 * 400;
+	int ThoroughBushThoroughBrier = 200 * 200;
 	int OverParkOverPale = OverHillOverDale.cols * OverHillOverDale.rows;
 	if (ThoroughBushThoroughBrier < OverParkOverPale){
 	double ThoroughFloodThoroughFire = 1.0 / sqrt(OverParkOverPale / ThoroughBushThoroughBrier);
 	cv::resize(OverHillOverDale, OverHillOverDale, cv::Size(), ThoroughFloodThoroughFire, ThoroughFloodThoroughFire, cv::INTER_LINEAR);
-	}*/
+	}
 	IntensityImage * IDoWanderEverywhere = ImageFactory::newIntensityImage();
 	HereBeDragons::NoWantOfConscienceHoldItThatICall(OverHillOverDale, *IDoWanderEverywhere);
 	return IDoWanderEverywhere;
 }
-
-/*
-IntensityImage * DefaultPreProcessing::stepEdgeDetection(const IntensityImage &src) const {
-	cv::Mat OverHillOverDale;
-	HereBeDragons::HerLoveForWhoseDearLoveIRiseAndFall(src, OverHillOverDale);
-	//cv::medianBlur(*image, *image, 3);
-	//cv::GaussianBlur(*image, *image, cv::Size(3, 3), 0, 0, cv::BORDER_DEFAULT);
-	cv::Mat ThoroughBushThoroughBrier = (cv::Mat_<float>(9, 9) << 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, -4, -4, -4, 1, 1, 1, 1, 1, 1, -4, -4, -4, 1, 1, 1, 1, 1, 1, -4, -4, -4, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0);
-	cv::Mat OverParkOverPale;
-	filter2D(OverHillOverDale, OverParkOverPale, CV_8U, ThoroughBushThoroughBrier, cv::Point(-1, -1), 0, cv::BORDER_DEFAULT);
-	IntensityImage * ThoroughFloodThoroughFire = ImageFactory::newIntensityImage();
-	HereBeDragons::NoWantOfConscienceHoldItThatICall(OverParkOverPale, *ThoroughFloodThoroughFire);
-	return ThoroughFloodThoroughFire;
-}
-*/
 
 IntensityImage * DefaultPreProcessing::stepEdgeDetection(const IntensityImage &src) const {
 	cv::Mat imageMatrix;
@@ -68,49 +52,7 @@ IntensityImage * DefaultPreProcessing::stepEdgeDetection(const IntensityImage &s
 
 	// Deriche
 	Deriche edgeDetector(3);
-	/*
-	edgeDetector.smooth(imageMatrix);
-
-	cv::Mat imageMatrixX, imageMatrixY;
-	imageMatrix.convertTo(imageMatrixX, CV_32FC1);
-	imageMatrix.convertTo(imageMatrixY, CV_32FC1);
-	
-	cv::Mat edge_gradients = cv::Mat(imageMatrixX.rows, imageMatrixX.cols, CV_32FC1);
-	cv::Mat angles = cv::Mat(imageMatrixX.rows, imageMatrixX.cols, CV_8UC1);
-
-	// Get both the x and y derivatives.
-	edgeDetector.derivativeX(imageMatrixX);
-	edgeDetector.derivativeY(imageMatrixY);
-	
-	// Get gradient edges.
-	for (int x = 0; x < imageMatrixX.rows; ++x) {
-		for (int y = 0; y < imageMatrixX.cols; ++y) {
-			edge_gradients.at<float>(x, y) = hypotf(imageMatrixX.at<float>(x, y), imageMatrixY.at<float>(x, y));
-		}
-	}
-
-	// Get gradient directions.
-	for (int y = 0; y < imageMatrixY.rows; ++y) {
-		for (int x = 0; x < imageMatrixX.cols; ++x) {
-			float Ypixel = imageMatrixY.at<float>(x, y);
-			float Xpixel = imageMatrixX.at<float>(x, y); // Access violation on some images.
-
-			float degrees = atan2f(Ypixel, Xpixel) * (180.f / 3.14159265358979f); // Convert radians to degrees using the float version of pi.
-
-			if (degrees < 0.f) degrees = -degrees;
-
-			angles.at<uchar>(x, y) = (uchar)(roundf(degrees / 45.f) * 45.f) % 180; // Round to nearest 45 for non-max-suppression.
-			//std::cout << +angles.at<uchar>(x, y) << " " << degrees << " " << "\n";
-		}
-		//std::cout << std::endl;
-	}
-
-	cv::Mat output = edgeDetector.nonMaxSuppression(edge_gradients, angles);
-	//output.convertTo(output, CV_8UC1);
-	*/
-	
-	cv::Mat output = edgeDetector.deriche(imageMatrix);
-	
+	cv::Mat output = edgeDetector.deriche(imageMatrix);	
 	IntensityImage * outputImage = ImageFactory::newIntensityImage();
 	HereBeDragons::NoWantOfConscienceHoldItThatICall(output, *outputImage);
 

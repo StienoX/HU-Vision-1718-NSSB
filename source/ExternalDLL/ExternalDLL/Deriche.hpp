@@ -95,13 +95,14 @@ public:
 		a4 = -k * expNeq2Sigma;
 		c = -powf(1.f - expNeqSigma, 2.f);
 
+		/*
 		std::cout << "DEBUG\n" <<
 			"Sigma: " << sigma << "\n" <<
 			"expNeqSigma: " << expNeqSigma << "\n" <<
 			"expNeq2Sigma: " << expNeq2Sigma << "\n" <<
 			"k: " << k << "\n" <<
 			"b1: " << b1 << "\n" <<
-			"b2: " << b2 << "\n";
+			"b2: " << b2 << "\n";*/
 		}
 
 	void smooth(cv::Mat & matrix) {
@@ -202,7 +203,7 @@ public:
 		for (int y = 0; y < imageMatrixY.rows; ++y) {
 			for (int x = 0; x < imageMatrixX.cols; ++x) {
 				float Ypixel = imageMatrixY.at<float>(x, y);
-				float Xpixel = imageMatrixX.at<float>(x, y); // Access violation on some images.
+				float Xpixel = imageMatrixX.at<float>(x, y);
 
 				float degrees = atan2f(Ypixel, Xpixel) * (180.f / 3.14159265358979f); // Convert radians to degrees using the float version of pi.
 
