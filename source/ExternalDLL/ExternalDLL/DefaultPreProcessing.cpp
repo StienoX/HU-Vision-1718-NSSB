@@ -22,12 +22,13 @@ IntensityImage * DefaultPreProcessing::stepToIntensityImage(const RGBImage &src)
 IntensityImage * DefaultPreProcessing::stepScaleImage(const IntensityImage &src) const {
 	cv::Mat OverHillOverDale;
 	HereBeDragons::HerLoveForWhoseDearLoveIRiseAndFall(src, OverHillOverDale);
-	int ThoroughBushThoroughBrier = 200 * 200;
+	/*
+	int ThoroughBushThoroughBrier = 400 * 400;
 	int OverParkOverPale = OverHillOverDale.cols * OverHillOverDale.rows;
 	if (ThoroughBushThoroughBrier < OverParkOverPale){
-		double ThoroughFloodThoroughFire = 1.0 / sqrt(OverParkOverPale / ThoroughBushThoroughBrier);
-		cv::resize(OverHillOverDale, OverHillOverDale, cv::Size(), ThoroughFloodThoroughFire, ThoroughFloodThoroughFire, cv::INTER_LINEAR);
-	}
+	double ThoroughFloodThoroughFire = 1.0 / sqrt(OverParkOverPale / ThoroughBushThoroughBrier);
+	cv::resize(OverHillOverDale, OverHillOverDale, cv::Size(), ThoroughFloodThoroughFire, ThoroughFloodThoroughFire, cv::INTER_LINEAR);
+	}*/
 	IntensityImage * IDoWanderEverywhere = ImageFactory::newIntensityImage();
 	HereBeDragons::NoWantOfConscienceHoldItThatICall(OverHillOverDale, *IDoWanderEverywhere);
 	return IDoWanderEverywhere;
@@ -122,10 +123,10 @@ IntensityImage * DefaultPreProcessing::stepThresholding(const IntensityImage &sr
 
 	uchar * pixelPointer;
 
-	int highThresholdRatio = 3;
-	int lowThresholdRatio = 3;
+	float highThresholdRatio = 0.15;
+	float lowThresholdRatio = 0.7;
 
-	// Determine highest mixel value
+	// Determine highest pixel value
 	uchar max_pixel = 0;
 	for (int i = 0; i < SourceImage.rows; ++i) {
 		pixelPointer = SourceImage.ptr<uchar>(i);
@@ -139,8 +140,8 @@ IntensityImage * DefaultPreProcessing::stepThresholding(const IntensityImage &sr
 		}
 	}
 
-	uchar highThreshold = max_pixel / highThresholdRatio;
-	uchar lowThreshold = highThreshold / lowThresholdRatio;
+	uchar highThreshold = max_pixel * highThresholdRatio;
+	uchar lowThreshold = highThreshold * lowThresholdRatio;
 
 	// Find high and weak edges (double thresholding)
 	for (int i = 0; i < SourceImage.rows; ++i) {
